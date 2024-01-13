@@ -18,7 +18,7 @@ export const main = handler(async (event) => {
   const params = {
     TableName: Table.GridConfigs.tableName,
     Item: {
-      userId: "123",
+      userId: event.requestContext.authorizer?.iam.cognitoIdentity.identityId,
       gridConfigId: uuid.v1(),
       width: data.width,
       layout: data.layout,

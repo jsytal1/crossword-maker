@@ -8,7 +8,7 @@ export const main = handler(async (event) => {
     // 'Key' defines the partition key and sort key of
     // the item to be retrieved
     Key: {
-      userId: "123", // The id of the author
+      userId: event.requestContext.authorizer?.iam.cognitoIdentity.identityId,
       gridConfigId: event?.pathParameters?.id,
     },
   };

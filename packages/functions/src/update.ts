@@ -9,7 +9,7 @@ export const main = handler(async (event) => {
     TableName: Table.GridConfigs.tableName,
     Key: {
       // The attributes of the item to be created
-      userId: "123", // The id of the author
+      userId: event.requestContext.authorizer?.iam.cognitoIdentity.identityId,
       gridConfigId: event?.pathParameters?.id,
     },
     // 'UpdateExpression' defines the attributes to be updated
