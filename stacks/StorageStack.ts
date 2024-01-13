@@ -4,10 +4,12 @@ export function StorageStack({ stack }: StackContext) {
   // Create an S3 bucket
   const bucket = new Bucket(stack, "Uploads");
   // Create the DynamoDB table
-  const table = new Table(stack, "GridConfig", {
+  const table = new Table(stack, "GridConfigs", {
     fields: {
       userId: "string",
       gridConfigId: "string",
+      width: "number",
+      height: "number",
       layout: "string",
     },
     primaryIndex: { partitionKey: "userId", sortKey: "gridConfigId" },
