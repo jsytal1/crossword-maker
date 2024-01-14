@@ -9,14 +9,16 @@
     "deploy": "sst deploy",
     "remove": "sst remove",
     "console": "sst console",
+    "test": "sst bind vitest run",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "sst": "^2.39.5",
+    "@tsconfig/node18": "^18.2.2",
     "aws-cdk-lib": "2.110.1",
     "constructs": "10.3.0",
+    "sst": "^2.39.5",
     "typescript": "^5.3.3",
-    "@tsconfig/node18": "^18.2.2"
+    "vitest": "^1.2.0"
   },
   "workspaces": [
     "packages/*"
