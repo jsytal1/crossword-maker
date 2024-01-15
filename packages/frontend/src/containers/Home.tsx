@@ -61,7 +61,7 @@ export default function Home() {
   return (
     <div className="Home">
       <div className="lander">
-        <h1>Crossword Maker</h1>
+        <h1>Make Me Cross</h1>
         <p className="text-muted">A Crossword Building app</p>
       </div>
       <Form onSubmit={handleSubmit}>

@@ -46,7 +46,7 @@ function App() {
         <Navbar collapseOnSelect bg="light" expand="md" className="mb-3 px-3">
           <LinkContainer to="/">
             <Navbar.Brand className="fw-bold text-muted">
-              Crossword Maker
+              Make Me Cross
             </Navbar.Brand>
           </LinkContainer>
           <Navbar.Toggle />
