@@ -2,7 +2,7 @@ import { Api, Config, StackContext, use } from "sst/constructs";
 import { StorageStack } from "./StorageStack";
 
 export function ApiStack({ stack }: StackContext) {
-  const { table } = use(StorageStack);
+  const { table, bucket } = use(StorageStack);
   const STRIPE_SECRET_KEY = new Config.Secret(stack, "STRIPE_SECRET_KEY");
 
   // Create the API
@@ -20,6 +20,17 @@ export function ApiStack({ stack }: StackContext) {
       "PUT /grid-configs/{id}": "packages/functions/src/update.main",
       "DELETE /grid-configs/{id}": "packages/functions/src/delete.main",
       "POST /billing": "packages/functions/src/billing.main",
+      "POST /grid-configs/solve": {
+        authorizer: "none",
+        function: {
+          handler: "packages/python-functions/src/solve.handler",
+          runtime: "python3.8",
+          permissions: [bucket],
+          environment: {
+            BUCKET_NAME: bucket.bucketName,
+          },
+        },
+      },
     },
   });
 

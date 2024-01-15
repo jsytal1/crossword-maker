@@ -1,75 +1,80 @@
+import React, { useState } from "react";
 import Form from "react-bootstrap/Form";
-
-import "./Home.css";
-
-import LoaderButton from "../components/LoaderButton";
-import GridInput from "../components/GridInput";
-import Grid from "../components/Grid";
+import { useNavigate } from "react-router-dom";
 import { API } from "aws-amplify";
-import { useState } from "react";
 import { GridConfigType } from "../types/grid-config";
 import { onError } from "../lib/errorLib";
 
-export default function Home() {
-  const [layout, setLayout] = useState("_____TASTE_______________");
-  const [solutions, setSolutions] = useState<Array<string>>([]);
+import "./NewGridConfig.css";
 
+import LoaderButton from "../components/LoaderButton";
+import Grid from "../components/GridInput";
+
+export default function NewGridConfig() {
+  //const file = useRef<null | File>(null);
+  const nav = useNavigate();
+  const [layout, setLayout] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   function validateForm() {
     return layout.length > 0;
   }
 
+  /*
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    if (event.currentTarget.files === null) return;
+    file.current = event.currentTarget.files[0];
+  }
+  */
+
   function createGridConfig(gridConfig: GridConfigType) {
-    return API.post("grid-configs", "/grid-configs/solve", {
+    return API.post("grid-config", "/grid-configs", {
       body: gridConfig,
     });
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    /*
+    if (file.current && file.current.size > config.MAX_ATTACHMENT_SIZE) {
+      alert(
+        `Please pick a file smaller than ${
+          config.MAX_ATTACHMENT_SIZE / 1000000
+        } MB.`
+      );
+      return;
+    }
+    */
+
     setIsLoading(true);
+
     try {
       //const attachment = file.current
       //  ? await s3Upload(file.current)
       //  : undefined;
 
-      const solutions = await createGridConfig({
+      await createGridConfig({
         layout: layout,
         width: 5,
         height: 5,
         //attachment,
       });
-      setSolutions(solutions);
-      setIsLoading(false);
+      nav("/");
     } catch (e) {
       onError(e);
       setIsLoading(false);
     }
   }
 
-  function renderGridList(grids: string[]) {
-    return (
-      <div className="Solutions">
-        {grids.map((grid) => (
-          <Grid key={grid} width={5} height={5} content={grid} />
-        ))}
-      </div>
-    );
-  }
-
   return (
-    <div className="Home">
-      <div className="lander">
-        <h1>Crossword Maker</h1>
-        <p className="text-muted">A Crossword Building app</p>
-      </div>
+    <div className="NewGridConfig">
       <Form onSubmit={handleSubmit}>
         <Form.Group controlId="layout">
-          <GridInput
+          <Grid
             width={5}
             height={5}
-            content={layout}
+            content={"_____TASTE_______________"}
             onUpdate={(newValue: string) => setLayout(newValue)}
           />
         </Form.Group>
@@ -86,10 +91,9 @@ export default function Home() {
           isLoading={isLoading}
           disabled={!validateForm()}
         >
-          Find
+          Create
         </LoaderButton>
       </Form>
-      {solutions.length > 0 && renderGridList(solutions)}
     </div>
   );
 }

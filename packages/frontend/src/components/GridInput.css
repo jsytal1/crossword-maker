@@ -1,0 +1,29 @@
+.Table {
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.Row {
+  padding: 0;
+}
+
+.Cell {
+  border: 2px solid black;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+}
+
+.Input {
+  width: 100%;
+  height: 100%;
+  font-size: 1.3rem;
+  border: none;
+  padding: 0;
+  text-align: center;
+}
+
+.Input:focus {
+  background-color: #fde68a;
+  outline: none;
+}

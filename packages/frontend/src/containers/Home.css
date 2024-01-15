@@ -7,3 +7,10 @@
   font-family: "Open Sans", sans-serif;
   font-weight: 600;
 }
+
+.Solutions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
