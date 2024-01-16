@@ -6,22 +6,47 @@ import LoaderButton from "../components/LoaderButton";
 import GridInput from "../components/GridInput";
 import Grid from "../components/Grid";
 import { API } from "aws-amplify";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GridConfigType } from "../types/grid-config";
 import { onError } from "../lib/errorLib";
 
 export default function Home() {
-  const [layout, setLayout] = useState("_____TASTE_______________");
-  const [solutions, setSolutions] = useState<Array<string>>([]);
-
+  const [layout, setLayout] = useState("_____WORDS_______________");
+  const [solutions, setSolutions] = useState<Array<string>>([
+    "ALGAEWORDSAFOOTSTOREHYMNS",
+  ]);
   const [isLoading, setIsLoading] = useState(false);
+
+  //useEffect(() => {
+  //  async function onLoad() {
+  //    try {
+  //      const solutions = await getSolutions();
+  //      setSolutions(solutions);
+  //    } catch (e) {
+  //      onError(e);
+  //    }
+
+  //    setIsLoading(false);
+  //  }
+
+  //  onLoad();
+  //}, []);
+
+  async function getSolutions(): Promise<Array<string>> {
+    const solutions = await createGridConfig({
+      layout: layout,
+      width: 5,
+      height: 5,
+    });
+    return solutions;
+  }
 
   function validateForm() {
     return layout.length > 0;
   }
 
   function createGridConfig(gridConfig: GridConfigType) {
-    return API.post("grid-configs", "/grid-configs/solve", {
+    return API.post("grid-configs", "/grid-configs/go-solve", {
       body: gridConfig,
     });
   }
@@ -29,23 +54,9 @@ export default function Home() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsLoading(true);
-    try {
-      //const attachment = file.current
-      //  ? await s3Upload(file.current)
-      //  : undefined;
-
-      const solutions = await createGridConfig({
-        layout: layout,
-        width: 5,
-        height: 5,
-        //attachment,
-      });
-      setSolutions(solutions);
-      setIsLoading(false);
-    } catch (e) {
-      onError(e);
-      setIsLoading(false);
-    }
+    const solutions = await getSolutions();
+    setSolutions(solutions);
+    setIsLoading(false);
   }
 
   function renderGridList(grids: string[]) {
@@ -73,12 +84,6 @@ export default function Home() {
             onUpdate={(newValue: string) => setLayout(newValue)}
           />
         </Form.Group>
-        {/*
-        <Form.Group className="mt-2" controlId="file">
-          <Form.Label>Attachment</Form.Label>
-          <Form.Control onChange={handleFileChange} type="file" />
-        </Form.Group>
-        */}
         <LoaderButton
           size="lg"
           type="submit"
@@ -90,6 +95,7 @@ export default function Home() {
         </LoaderButton>
       </Form>
       {solutions.length > 0 && renderGridList(solutions)}
+      {solutions.length === 0 && <span>No solutions found</span>}
     </div>
   );
 }

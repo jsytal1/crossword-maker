@@ -1,12 +1,13 @@
 import { Api, Config, StackContext, use } from "sst/constructs";
 import { StorageStack } from "./StorageStack";
 
-export function ApiStack({ stack }: StackContext) {
+export function ApiStack({ stack, app }: StackContext) {
   const { table, bucket } = use(StorageStack);
   const STRIPE_SECRET_KEY = new Config.Secret(stack, "STRIPE_SECRET_KEY");
 
   // Create the API
   const api = new Api(stack, "Api", {
+    customDomain: app.stage === "prod" ? "api.makemecross.com" : undefined,
     defaults: {
       authorizer: "iam",
       function: {
@@ -31,12 +32,23 @@ export function ApiStack({ stack }: StackContext) {
           },
         },
       },
+      "POST /grid-configs/go-solve": {
+        authorizer: "none",
+        function: {
+          handler: "packages/go-functions/src/solve.go",
+          permissions: [bucket],
+          runtime: "go",
+          environment: {
+            BUCKET_NAME: bucket.bucketName,
+          },
+        },
+      },
     },
   });
 
   // Show the API endpoint in the output
   stack.addOutputs({
-    ApiEndpoint: api.url,
+    ApiEndpoint: api.customDomainUrl || api.url,
   });
 
   // Return the API resource

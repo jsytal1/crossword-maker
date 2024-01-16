@@ -126,7 +126,7 @@ class CrosswordMaker:
 
     def get_solutions(self, arr: list, limit: int = 10):
         solutions = []
-        def backtrack(curr, i = 0):
+        def backtrack(curr):
             row_word_sets = self.get_valid_row_words(curr)
             col_word_sets = self.get_valid_col_words(curr)
             valid = all([len(word_set) != 0 for word_set in row_word_sets + col_word_sets])
@@ -219,12 +219,8 @@ with open('/tmp/en-words-5.txt', 'r') as f:
 
 
 def handler(event, context):
-  print('received event:')
-  print(event)
   arguments = json.loads(event['body'])
-  print(arguments)
   grid = list(arguments['layout'])
   
   solutions = cm.get_solutions(grid, 1)
-  print(solutions)
   return solutions
