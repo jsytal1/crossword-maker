@@ -11,7 +11,7 @@ import { useState } from "react";
 import { GridConfigType } from "../types/grid-config";
 import { onError } from "../lib/errorLib";
 import { LinkContainer } from "react-router-bootstrap";
-import { Col, Nav } from "react-bootstrap";
+import { Nav } from "react-bootstrap";
 
 interface HomeProps {
   lang: string;
