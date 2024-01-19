@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -296,9 +297,11 @@ func isComplete(curr []string) bool {
 func rowWords(curr []string, width int, height int) []string {
 	result := make([]string, 0, height)
 	for i := 0; i < height; i++ {
-		start := width * i
-		end := start + width
-		result = append(result, strings.Join(curr[start:end], ""))
+		var patternBuilder strings.Builder
+		for j := 0; j < width; j++ {
+			patternBuilder.WriteString(curr[i*width+j])
+		}
+		result = append(result, patternBuilder.String())
 	}
 	return result
 }
@@ -451,7 +454,7 @@ func getPositions(arr []string, width int, height int) []map[string]int {
 	for row_idx, row := range rows {
 		curr_length := 0
 		prev_char_idx := 0
-		for char_idx, char := range row {
+		for char_idx, char := range []rune(row) {
 			prev_char_idx = char_idx
 			if string(char) != "#" {
 				curr_length++
@@ -484,7 +487,7 @@ func getPositions(arr []string, width int, height int) []map[string]int {
 	for col_idx, col := range cols {
 		curr_length := 0
 		prev_char_idx := 0
-		for char_idx, char := range col {
+		for char_idx, char := range []rune(col) {
 			prev_char_idx = char_idx
 			if string(char) != "#" {
 				curr_length++
@@ -519,6 +522,16 @@ func getPositions(arr []string, width int, height int) []map[string]int {
 	return positions
 }
 
+func firstNChars(s string, n int) string {
+	for i := range s {
+		if n == 0 {
+			return s[:i]
+		}
+		n--
+	}
+	return s
+}
+
 func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// No need to unmarshal the body, as it's already a struct
 	var arguments map[string]interface{}
@@ -546,7 +559,7 @@ func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.A
 	width := 0
 	for _, row := range rows {
 		if len(row) > width {
-			width = len(row)
+			width = utf8.RuneCountInString(row)
 		}
 	}
 	width = min(width, 5)
@@ -555,10 +568,11 @@ func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.A
 	// Fill each row with '#' if it's shorter than width
 	for i := 0; i < height; i++ {
 		row := rows[i]
-		if len(row) < width {
-			rows[i] = row + strings.Repeat("#", width-len(row))
+		rowRunes := []rune(row)
+		if len(rowRunes) < width {
+			rows[i] = row + strings.Repeat("#", width-len(rowRunes))
 		} else {
-			rows[i] = row[:width]
+			rows[i] = firstNChars(row, width)
 		}
 	}
 
