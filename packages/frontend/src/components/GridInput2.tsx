@@ -71,6 +71,17 @@ export default function GridInput2({
 
       return;
     }
+    if (value.includes("ß")) {
+      setTimeout(() => {
+        event.target.selectionStart = selection.start;
+        event.target.selectionEnd = selection.end;
+      }, 0);
+
+      const newValue = value.replace(/ß/g, "ẞ");
+      onUpdate(newValue);
+      setText(newValue);
+      return;
+    }
     onUpdate(event.target.value);
     setText(event.target.value);
   };
