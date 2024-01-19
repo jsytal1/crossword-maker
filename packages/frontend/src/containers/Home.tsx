@@ -9,6 +9,7 @@ import Grid from "../components/Grid";
 import { API } from "aws-amplify";
 import { useState } from "react";
 import { GridConfigType } from "../types/grid-config";
+import { onError } from "../lib/errorLib";
 
 export default function Home() {
   const [layout, setLayout] = useState("     \n".repeat(5));
@@ -36,9 +37,13 @@ export default function Home() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsLoading(true);
-    const solutions = await getSolutions();
-    setIsReset(false);
-    setSolutions(solutions);
+    try {
+      const solutions = await getSolutions();
+      setIsReset(false);
+      setSolutions(solutions);
+    } catch (e) {
+      onError(e);
+    }
     setIsLoading(false);
   }
 
