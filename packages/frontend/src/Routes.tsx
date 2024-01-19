@@ -8,7 +8,8 @@ import NewGridConfig from "./containers/NewGridConfig.tsx";
 export default function Links() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<Home lang="en" />} />
+      <Route path="/pl" element={<Home lang="pl" />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/puzzle/new" element={<NewGridConfig />} />

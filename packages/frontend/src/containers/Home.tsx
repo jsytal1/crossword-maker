@@ -11,7 +11,11 @@ import { useState } from "react";
 import { GridConfigType } from "../types/grid-config";
 import { onError } from "../lib/errorLib";
 
-export default function Home() {
+interface HomeProps {
+  lang: string;
+}
+
+export default function Home({ lang }: HomeProps) {
   const [layout, setLayout] = useState("     \n".repeat(5));
   const [solutions, setSolutions] = useState<Array<string>>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +33,7 @@ export default function Home() {
   }
 
   function createGridConfig(gridConfig: GridConfigType) {
-    return API.post("grid-configs", "/grid-configs/go-solve", {
+    return API.post("grid-configs", `/grid-configs/solve-${lang}`, {
       body: gridConfig,
     });
   }

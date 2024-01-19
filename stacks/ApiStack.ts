@@ -21,18 +21,29 @@ export function ApiStack({ stack, app }: StackContext) {
       "PUT /grid-configs/{id}": "packages/functions/src/update.main",
       "DELETE /grid-configs/{id}": "packages/functions/src/delete.main",
       "POST /billing": "packages/functions/src/billing.main",
-      "POST /grid-configs/solve": {
+      //"POST /grid-configs/solve": {
+      //  authorizer: "none",
+      //  function: {
+      //    handler: "packages/python-functions/src/solve.handler",
+      //    runtime: "python3.8",
+      //    permissions: [bucket],
+      //    environment: {
+      //      BUCKET_NAME: bucket.bucketName,
+      //    },
+      //  },
+      //},
+      "POST /grid-configs/solve-pl": {
         authorizer: "none",
         function: {
-          handler: "packages/python-functions/src/solve.handler",
-          runtime: "python3.8",
+          handler: "packages/go-functions/src-pl/solve.go",
           permissions: [bucket],
+          runtime: "go",
           environment: {
             BUCKET_NAME: bucket.bucketName,
           },
         },
       },
-      "POST /grid-configs/go-solve": {
+      "POST /grid-configs/solve-en": {
         authorizer: "none",
         function: {
           handler: "packages/go-functions/src/solve.go",
