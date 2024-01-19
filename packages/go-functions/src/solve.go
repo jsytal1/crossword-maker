@@ -540,7 +540,7 @@ func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.A
 
 	str := layout
 	rows := strings.Split(str, "\n")
-	rows = rows[:5]
+	rows = rows[:min(5, len(rows))]
 	rows = filterEmptyRows(rows)
 
 	width := 0
