@@ -579,7 +579,7 @@ func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.A
 	str = strings.Join(rows, "")
 
 	arr := strings.Split(str, "")
-	solutions := getSolutions(arr, 5, index, width, height)
+	solutions := getSolutions(arr, 1, index, width, height)
 
 	jsonArray, err := json.Marshal(solutions)
 	if err != nil {

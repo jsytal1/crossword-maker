@@ -61,26 +61,56 @@ export default function Home({ lang }: HomeProps) {
     );
   }
 
+  const data_by_lang = {
+    en: {
+      title: "Make Me Cross",
+      subtitle: "A Crossword Building app",
+      fieldLabel: "Crossword Layout",
+      instructions: [
+        "Type [Space] for an Empty White Square",
+        'Type [#] for a "Black" Square',
+        "Type [A-Z] for a pre-filled Square",
+        "Max word length is 5",
+      ],
+      searchLabel: "Search",
+      noResultsText: "No results found",
+    },
+    pl: {
+      title: "Krzyżówki",
+      subtitle: "Aplikacja do budowania krzyżówek",
+      fieldLabel: "Układ krzyżówki",
+      instructions: [
+        "Wpisz [Spację] dla Pustego Białego Kwadratu",
+        'Wpisz [#] dla "Czarnego" Kwadratu',
+        "Wpisz [A-Z] dla Kwadratu z Wypełnieniem",
+        "Maksymalna długość słowa to 5",
+      ],
+      searchLabel: "Szukaj",
+      noResultsText: "Nie znaleziono wyników",
+    },
+  };
+
+  const data = data_by_lang[lang];
+
   return (
     <div className="Home">
       <div className="lander">
-        <h1>Make Me Cross</h1>
-        <p>A Crossword Building app</p>
+        <h1>{data.title}</h1>
+        <p>{data.subtitle}</p>
       </div>
       <Form onSubmit={handleSubmit}>
         <Form.Group controlId="layout">
-          <Form.Label>Crossword Layout</Form.Label>
+          <Form.Label>{data.fieldLabel}</Form.Label>
 
           <Row>
             <Form.Text>
               <p>
-                Type [Space] for an Empty White Square
-                <br />
-                Type [#] for a "Black" Square
-                <br />
-                Type [A-Z] for a pre-filled Square
-                <br />
-                Max word length is 5.
+                {data.instructions.map((instruction: string) => (
+                  <span key={instruction}>
+                    {instruction}
+                    <br />
+                  </span>
+                ))}
               </p>
             </Form.Text>
           </Row>
@@ -93,12 +123,12 @@ export default function Home({ lang }: HomeProps) {
           isLoading={isLoading}
           disabled={!validateForm()}
         >
-          Find
+          {data.searchLabel}
         </LoaderButton>
       </Form>
       {solutions.length > 0 && renderGridList(solutions)}
       {solutions.length === 0 && isReset === false && (
-        <span>No solutions found</span>
+        <span>{data.noResultsText}</span>
       )}
     </div>
   );
