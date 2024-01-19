@@ -123,6 +123,7 @@ export default function GridInput2({
   };
   */
 
+  /*
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Backspace") {
       setTimeout(() => {
@@ -137,6 +138,7 @@ export default function GridInput2({
       }, 0);
     }
   };
+  */
 
   /*
   const _handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -243,7 +245,7 @@ export default function GridInput2({
           spellCheck={false}
           onChange={handleTextChange}
           onSelect={handleSelectionChange}
-          onKeyDown={handleKeyDown}
+          //onKeyDown={handleKeyDown}
           //onKeyUp={handleKeyUp}
           //onBlur={handleBlur}
           //onFocus={handleFocus}
