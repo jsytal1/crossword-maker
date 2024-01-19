@@ -1,42 +1,24 @@
 import Form from "react-bootstrap/Form";
+import Row from "react-bootstrap/Row";
 
 import "./Home.css";
 
 import LoaderButton from "../components/LoaderButton";
-import GridInput from "../components/GridInput";
+import GridInput2 from "../components/GridInput2";
 import Grid from "../components/Grid";
 import { API } from "aws-amplify";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { GridConfigType } from "../types/grid-config";
-import { onError } from "../lib/errorLib";
 
 export default function Home() {
-  const [layout, setLayout] = useState("_____WORDS_______________");
-  const [solutions, setSolutions] = useState<Array<string>>([
-    "ALGAEWORDSAFOOTSTOREHYMNS",
-  ]);
+  const [layout, setLayout] = useState("     \n".repeat(5));
+  const [solutions, setSolutions] = useState<Array<string>>([]);
   const [isLoading, setIsLoading] = useState(false);
-
-  //useEffect(() => {
-  //  async function onLoad() {
-  //    try {
-  //      const solutions = await getSolutions();
-  //      setSolutions(solutions);
-  //    } catch (e) {
-  //      onError(e);
-  //    }
-
-  //    setIsLoading(false);
-  //  }
-
-  //  onLoad();
-  //}, []);
+  const [isReset, setIsReset] = useState(true);
 
   async function getSolutions(): Promise<Array<string>> {
     const solutions = await createGridConfig({
       layout: layout,
-      width: 5,
-      height: 5,
     });
     return solutions;
   }
@@ -55,6 +37,7 @@ export default function Home() {
     event.preventDefault();
     setIsLoading(true);
     const solutions = await getSolutions();
+    setIsReset(false);
     setSolutions(solutions);
     setIsLoading(false);
   }
@@ -63,7 +46,7 @@ export default function Home() {
     return (
       <div className="Solutions">
         {grids.map((grid) => (
-          <Grid key={grid} width={5} height={5} content={grid} />
+          <Grid key={grid} content={grid} />
         ))}
       </div>
     );
@@ -77,12 +60,22 @@ export default function Home() {
       </div>
       <Form onSubmit={handleSubmit}>
         <Form.Group controlId="layout">
-          <GridInput
-            width={5}
-            height={5}
-            content={layout}
-            onUpdate={(newValue: string) => setLayout(newValue)}
-          />
+          <Form.Label>Crossword Layout</Form.Label>
+
+          <Row>
+            <Form.Text>
+              <p>
+                Type [Space] for an Empty White Square
+                <br />
+                Type [#] for a Black Square
+                <br />
+                Type [A-Z] for a pre-filled Square
+                <br />
+                Max word length is 5.
+              </p>
+            </Form.Text>
+          </Row>
+          <GridInput2 onUpdate={(newValue: string) => setLayout(newValue)} />
         </Form.Group>
         <LoaderButton
           size="lg"
@@ -95,7 +88,9 @@ export default function Home() {
         </LoaderButton>
       </Form>
       {solutions.length > 0 && renderGridList(solutions)}
-      {solutions.length === 0 && <span>No solutions found</span>}
+      {solutions.length === 0 && isReset === false && (
+        <span>No solutions found</span>
+      )}
     </div>
   );
 }

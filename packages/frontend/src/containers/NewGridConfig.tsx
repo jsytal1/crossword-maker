@@ -56,9 +56,6 @@ export default function NewGridConfig() {
 
       await createGridConfig({
         layout: layout,
-        width: 5,
-        height: 5,
-        //attachment,
       });
       nav("/");
     } catch (e) {

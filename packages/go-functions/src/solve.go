@@ -19,10 +19,8 @@ import (
 )
 
 const (
-	key    = "words-5.txt"
-	width  = 5
-	height = 5
-	empty  = "_"
+	key   = "en-words.txt"
+	empty = " "
 )
 
 var bucketName = os.Getenv("BUCKET_NAME")
@@ -83,7 +81,7 @@ func init() {
 	// Initialization code here
 	index = make(map[string]map[string]struct{})
 	// Check if the file exists
-	if _, err := os.Stat("/tmp/en-words-5.txt"); os.IsNotExist(err) {
+	if _, err := os.Stat("/tmp/en-words.txt"); os.IsNotExist(err) {
 		// Load the Shared AWS Configuration (~/.aws/config)
 		cfg, err := config.LoadDefaultConfig(context.TODO())
 		if err != nil {
@@ -104,7 +102,7 @@ func init() {
 		defer output.Body.Close()
 
 		// Create the file
-		file, err := os.Create(filepath.Join("/tmp", "en-words-5.txt"))
+		file, err := os.Create(filepath.Join("/tmp", "en-words.txt"))
 		if err != nil {
 			panic("unable to create file, " + err.Error())
 		}
@@ -129,7 +127,7 @@ func init() {
 		}
 	}
 
-	file, err := os.Open("/tmp/en-words-5.txt")
+	file, err := os.Open("/tmp/en-words.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -150,21 +148,40 @@ func init() {
 
 }
 
-func getPatterns(arr []string) map[string]bool {
-	impliedWords := make(map[string]bool)
-	// Horizontal patterns
-	for i := 0; i < height; i++ {
-		start := width * i
-		end := start + width
-		pattern := strings.Join(arr[start:end], "")
-		if !strings.Contains(pattern, empty) {
-			impliedWords[pattern] = true
+func getWords(arr []string, width int, height int, positions []map[string]int) []string {
+	words := make([]string, 0, len(positions))
+	for position := range positions {
+		start := positions[position]["start"]
+		length := positions[position]["length"]
+		dir := positions[position]["dir"]
+		interval := 1
+		if dir == 1 {
+			interval = width
 		}
-	}
-	// Vertical patterns
-	for i := 0; i < width; i++ {
 		var pattern strings.Builder
-		for j := i; j < len(arr); j += width {
+		for i := 0; i < length; i += 1 {
+			j := start + i*interval
+			pattern.WriteString(arr[j])
+		}
+		patternStr := pattern.String()
+		words = append(words, patternStr)
+	}
+	return words
+}
+
+func getPatterns(arr []string, width int, height int, positions []map[string]int) map[string]bool {
+	impliedWords := make(map[string]bool)
+	for position := range positions {
+		start := positions[position]["start"]
+		length := positions[position]["length"]
+		dir := positions[position]["dir"]
+		interval := 1
+		if dir == 1 {
+			interval = width
+		}
+		var pattern strings.Builder
+		for i := 0; i < length; i += 1 {
+			j := start + i*interval
 			pattern.WriteString(arr[j])
 		}
 		patternStr := pattern.String()
@@ -175,8 +192,8 @@ func getPatterns(arr []string) map[string]bool {
 	return impliedWords
 }
 
-func getExtraWords(arr []string, index map[string]map[string]struct{}) map[string]bool {
-	impliedWords := getPatterns(arr)
+func getExtraWords(arr []string, index map[string]map[string]struct{}, width int, height int, positions []map[string]int) map[string]bool {
+	impliedWords := getPatterns(arr, width, height, positions)
 	extraWords := make(map[string]bool)
 	for word := range impliedWords {
 		if _, exists := index[word]; !exists {
@@ -186,7 +203,7 @@ func getExtraWords(arr []string, index map[string]map[string]struct{}) map[strin
 	return extraWords
 }
 
-func get_valid_row_words(curr []string, index map[string]map[string]struct{}) []map[string]struct{} {
+func get_valid_row_words(curr []string, index map[string]map[string]struct{}, width int, height int) []map[string]struct{} {
 	result := make([]map[string]struct{}, 0, height)
 	for i := 0; i < height; i++ {
 		start := width * i
@@ -201,7 +218,33 @@ func get_valid_row_words(curr []string, index map[string]map[string]struct{}) []
 	return result
 }
 
-func get_valid_col_words(curr []string, index map[string]map[string]struct{}) []map[string]struct{} {
+func get_valid_word_sets(curr []string, index map[string]map[string]struct{}, width int, height int, positions []map[string]int) []map[string]struct{} {
+	result := make([]map[string]struct{}, 0, width)
+	for position := range positions {
+		start := positions[position]["start"]
+		length := positions[position]["length"]
+		dir := positions[position]["dir"]
+		interval := 1
+		if dir == 1 {
+			interval = width
+		}
+		var pattern strings.Builder
+		for i := 0; i < length; i += 1 {
+			j := start + i*interval
+			pattern.WriteString(curr[j])
+		}
+		patternStr := pattern.String()
+		wordSet, exists := index[patternStr]
+		if !exists {
+			wordSet = make(map[string]struct{})
+		}
+		result = append(result, wordSet)
+	}
+
+	return result
+}
+
+func get_valid_col_words(curr []string, index map[string]map[string]struct{}, width int, height int) []map[string]struct{} {
 	result := make([]map[string]struct{}, 0, width)
 	for i := 0; i < width; i++ {
 		var patternBuilder strings.Builder
@@ -218,6 +261,15 @@ func get_valid_col_words(curr []string, index map[string]map[string]struct{}) []
 	return result
 }
 
+func allNonEmpty(wordSets []map[string]struct{}) bool {
+	for _, wordSet := range wordSets {
+		if len(wordSet) == 0 {
+			return false
+		}
+	}
+	return true
+}
+
 func allSetsNonEmpty(rowWordSets []map[string]struct{}, colWordSets []map[string]struct{}) bool {
 	for _, wordSet := range rowWordSets {
 		if len(wordSet) == 0 {
@@ -231,16 +283,17 @@ func allSetsNonEmpty(rowWordSets []map[string]struct{}, colWordSets []map[string
 	}
 	return true
 }
+
 func isComplete(curr []string) bool {
 	for _, item := range curr {
-		if item == empty {
+		if strings.Contains(item, empty) {
 			return false
 		}
 	}
 	return true
 }
 
-func rowWords(curr []string) []string {
+func rowWords(curr []string, width int, height int) []string {
 	result := make([]string, 0, height)
 	for i := 0; i < height; i++ {
 		start := width * i
@@ -250,7 +303,7 @@ func rowWords(curr []string) []string {
 	return result
 }
 
-func colWords(curr []string) []string {
+func colWords(curr []string, width int, height int) []string {
 	result := make([]string, 0, width)
 	for i := 0; i < width; i++ {
 		var patternBuilder strings.Builder
@@ -270,105 +323,99 @@ func extractPattern(curr []string, start, end, interval int) string {
 	return patternBuilder.String()
 }
 
-func backtrack(curr []string, index map[string]map[string]struct{}, solutions *[]string, limit int) {
-	row_word_sets := get_valid_row_words(curr, index)
-	col_word_sets := get_valid_col_words(curr, index)
-	valid := allSetsNonEmpty(row_word_sets, col_word_sets)
+func backtrack(curr []string, index map[string]map[string]struct{}, solutions *[]string, limit int, width int, height int, positions []map[string]int, depth int) {
+	if depth > 10 {
+		return
+	}
+	word_sets := get_valid_word_sets(curr, index, width, height, positions)
+	valid := allNonEmpty(word_sets)
 	if !valid {
 		return
 	}
-	complete := isComplete(curr)
+	allPatterns := getWords(curr, width, height, positions)
+	complete := isComplete(allPatterns)
 	if complete {
-		rowWords := rowWords(curr) // Assuming this method exists and returns []string
-		colWords := colWords(curr) // Assuming this method exists and returns []string
+		rowWords := rowWords(curr, width, height)
 
 		// Use a map to count unique words
 		uniqueWords := make(map[string]struct{})
-		for _, word := range append(rowWords, colWords...) {
+		for _, word := range allPatterns {
 			uniqueWords[word] = struct{}{}
 		}
 		uniqueWordCount := len(uniqueWords)
 
-		if uniqueWordCount == width+height {
-			*solutions = append(*solutions, strings.Join(curr, ""))
+		if uniqueWordCount == len(positions) {
+			*solutions = append(*solutions, strings.Join(rowWords, "\n"))
 		}
 		return
 	}
 
 	minSize := math.MaxInt
-	var minSet map[string]struct{}
-	minIndex := -1
-	minEndIndex := -1
-	minInterval := 1
+	minWordSetIndex := -1
 
-	allSets := append(row_word_sets, col_word_sets...)
+	for index, wordSet := range word_sets {
+		pattern := allPatterns[index]
 
-	for index, wordSet := range allSets {
-		var gridIndex, endIndex, interval int
-		if index < height {
-			gridIndex = index * width
-			interval = 1
-			endIndex = gridIndex + width
-		} else {
-			gridIndex = index - height
-			interval = width
-			endIndex = gridIndex + interval*width
-		}
-
-		pattern := extractPattern(curr, gridIndex, endIndex, interval)
 		if !strings.Contains(pattern, empty) {
 			continue
 		}
 
 		if len(wordSet) < minSize {
 			minSize = len(wordSet)
-			minSet = wordSet
-			minIndex = gridIndex
-			minInterval = interval
-			minEndIndex = endIndex
+			minWordSetIndex = index
 		}
 	}
-
-	back := make([]string, 0, (minEndIndex-minIndex)/minInterval)
-	for i := minIndex; i < minEndIndex; i += minInterval {
-		back = append(back, curr[i])
+	if minWordSetIndex == -1 {
+		return
 	}
 
+	minSet := word_sets[minWordSetIndex]
+	minPosition := positions[minWordSetIndex]
+	minInterval := minPosition["interval"]
+	minIndex := minPosition["start"]
+
+	back := make([]string, 0, minPosition["length"])
+	for i := 0; i < minPosition["length"]; i += 1 {
+		j := minPosition["start"] + i*minInterval
+		back = append(back, curr[j])
+	}
 	for word := range minSet {
-		k := 0
-		for i := minIndex; i < minEndIndex; i += minInterval {
-			curr[i] = string(word[k])
-			k++
+
+		for i := 0; i < minPosition["length"]; i += 1 {
+			j := minPosition["start"] + i*minInterval
+			curr[j] = string(word[i])
 		}
-		backtrack(curr, index, solutions, limit) // Assuming backtrack is a method of Puzzle
+
+		backtrack(curr, index, solutions, limit, width, height, positions, depth+1) // Assuming backtrack is a method of Puzzle
 		if len(*solutions) == limit {
 			return
 		}
 	}
 
 	// Restore the original values in curr
-	k := 0
-	for i := minIndex; i < minEndIndex; i += minInterval {
-		curr[i] = back[k]
-		k++
+	for i := 0; i < minPosition["length"]; i += 1 {
+		j := minIndex + i*minInterval
+		curr[j] = back[i]
 	}
 }
 
-func getSolutions(arr []string, limit int, index map[string]map[string]struct{}) []string {
+func getSolutions(arr []string, limit int, index map[string]map[string]struct{}, width int, height int) []string {
 	solutions := make([]string, 0)
 	// Convert arr to uppercase
+	positions := getPositions(arr, width, height)
+
 	for i := range arr {
 		arr[i] = strings.ToUpper(arr[i])
 	}
 
-	extraWords := getExtraWords(arr, index)
+	extraWords := getExtraWords(arr, index, width, height, positions)
 	// Add extra words to the index
 	for word := range extraWords {
 		addWord(word, index)
 	}
 
 	// Backtracking algorithm would be here
-	backtrack(arr, index, &solutions, limit)
+	backtrack(arr, index, &solutions, limit, width, height, positions, 0)
 
 	// Remove extra words from the index
 	for word := range extraWords {
@@ -386,6 +433,90 @@ func getSolutions(arr []string, limit int, index map[string]map[string]struct{})
 
 type MyEvent struct {
 	Body string `json:"body"`
+}
+
+func filterEmptyRows(rows []string) []string {
+	filteredRows := make([]string, 0)
+	for _, row := range rows {
+		if row != "" {
+			filteredRows = append(filteredRows, row)
+		}
+	}
+	return filteredRows
+}
+
+func getPositions(arr []string, width int, height int) []map[string]int {
+	positions := make([]map[string]int, 0)
+	rows := rowWords(arr, width, height)
+	for row_idx, row := range rows {
+		curr_length := 0
+		prev_char_idx := 0
+		for char_idx, char := range row {
+			prev_char_idx = char_idx
+			if string(char) != "#" {
+				curr_length++
+			} else {
+				if curr_length >= 2 {
+					position := make(map[string]int)
+					position["dir"] = 0
+					position["row"] = row_idx
+					position["col"] = char_idx - curr_length
+					position["start"] = row_idx*width + char_idx - curr_length
+					position["length"] = curr_length
+					position["interval"] = 1
+					positions = append(positions, position)
+				}
+				curr_length = 0
+			}
+		}
+		if curr_length >= 2 {
+			position := make(map[string]int)
+			position["dir"] = 0
+			position["row"] = row_idx
+			position["col"] = prev_char_idx - curr_length + 1
+			position["start"] = row_idx*width + prev_char_idx - curr_length + 1
+			position["length"] = curr_length
+			position["interval"] = 1
+			positions = append(positions, position)
+		}
+	}
+	cols := colWords(arr, width, height)
+	for col_idx, col := range cols {
+		curr_length := 0
+		prev_char_idx := 0
+		for char_idx, char := range col {
+			prev_char_idx = char_idx
+			if string(char) != "#" {
+				curr_length++
+			} else {
+				if curr_length >= 2 {
+					position := make(map[string]int)
+					position["dir"] = 1
+					position["row"] = char_idx - curr_length
+					position["col"] = col_idx
+					position["start"] = (char_idx-curr_length)*width + (col_idx)
+					position["length"] = curr_length
+					position["interval"] = width
+					positions = append(positions, position)
+				}
+				curr_length = 0
+			}
+		}
+		if curr_length >= 2 {
+			position := make(map[string]int)
+			position["dir"] = 1
+			position["row"] = prev_char_idx - curr_length + 1
+			position["col"] = col_idx
+			position["start"] = (prev_char_idx-curr_length+1)*width + (col_idx)
+			position["length"] = curr_length
+			position["interval"] = width
+			positions = append(positions, position)
+		}
+	}
+
+	//cols := colWords(arr, width, height)
+
+	return positions
 }
 
 func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -408,8 +539,33 @@ func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.A
 	}
 
 	str := layout
+	rows := strings.Split(str, "\n")
+	rows = rows[:5]
+	rows = filterEmptyRows(rows)
+
+	width := 0
+	for _, row := range rows {
+		if len(row) > width {
+			width = len(row)
+		}
+	}
+	width = min(width, 5)
+	height := len(rows)
+
+	// Fill each row with '#' if it's shorter than width
+	for i := 0; i < height; i++ {
+		row := rows[i]
+		if len(row) < width {
+			rows[i] = row + strings.Repeat("#", width-len(row))
+		} else {
+			rows[i] = row[:width]
+		}
+	}
+
+	str = strings.Join(rows, "")
+
 	arr := strings.Split(str, "")
-	solutions := getSolutions(arr, 5, index)
+	solutions := getSolutions(arr, 5, index, width, height)
 
 	jsonArray, err := json.Marshal(solutions)
 	if err != nil {

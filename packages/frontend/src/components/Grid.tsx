@@ -1,36 +1,27 @@
 import "./Grid.css";
 
+const fontSize = 30;
+const lineHeight = 1.25;
+
 interface GridProps {
-  width?: number;
-  height?: number;
   content?: string;
 }
-export default function Grid({
-  width = 5,
-  height = 5,
-  content = "",
-  ...props
-}: GridProps) {
-  const data = content.split("").map((char) => (char === "_" ? "" : char));
-
+export default function Grid({ content = "" }: GridProps) {
+  const boxSize = fontSize * lineHeight;
+  const lines = content.split("\n");
+  const width = Math.max(...lines.map((line) => line.length));
+  const height = lines.length;
   return (
-    <table {...props} className="Table">
-      <tbody>
-        {[...Array(height)].map((_, rowIndex) => (
-          <tr key={rowIndex} className="Row">
-            {[...Array(width)].map((_, colIndex) => {
-              const char_index = rowIndex * width + colIndex;
-              const char = data[char_index] || "";
-
-              return (
-                <td key={colIndex} className="Cell">
-                  <span className="Span">{char}</span>
-                </td>
-              );
-            })}
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <textarea
+      readOnly
+      className="Grid"
+      style={{
+        fontSize: fontSize,
+        padding: 1,
+        width: width * boxSize + 2,
+        height: height * boxSize + 2,
+      }}
+      value={content}
+    />
   );
 }

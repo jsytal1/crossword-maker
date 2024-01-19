@@ -1,25 +1,9 @@
-.Table {
-  table-layout: fixed;
-  border-collapse: collapse;
-}
-
-.Row {
-  padding: 0;
-}
-
-.Cell {
-  border: 2px solid black;
-  padding: 0;
-  width: 2rem;
-  height: 2rem;
-}
-
-.Span {
-  display: block;
-  width: 100%;
-  height: 100%;
-  font-size: 1.3rem;
+.Grid {
   border: none;
-  padding: 0;
-  text-align: center;
+  font-family: MakeMeCross-Regular, monospace;
+  line-height: 1.25em;
+  letter-spacing: -0.007em;
+  text-wrap: nowrap;
+  resize: none;
+  text-transform: uppercase;
 }

@@ -1,2 +1,5 @@
-.App {
+@font-face {
+  font-family: "MakeMeCross-Regular";
+  font-style: normal;
+  src: url("fonts/MakeMeCross-Regular.woff2") format("truetype");
 }
