@@ -10,9 +10,24 @@ import { API } from "aws-amplify";
 import { useState } from "react";
 import { GridConfigType } from "../types/grid-config";
 import { onError } from "../lib/errorLib";
+import { LinkContainer } from "react-router-bootstrap";
+import { Col, Nav } from "react-bootstrap";
 
 interface HomeProps {
   lang: string;
+}
+
+interface Data {
+  title: string;
+  subtitle: string;
+  fieldLabel: string;
+  instructions: Array<string>;
+  searchLabel: string;
+  noResultsText: string;
+}
+
+interface DataByLang {
+  [key: string]: Data;
 }
 
 export default function Home({ lang }: HomeProps) {
@@ -61,7 +76,7 @@ export default function Home({ lang }: HomeProps) {
     );
   }
 
-  const data_by_lang = {
+  const data_by_lang: DataByLang = {
     en: {
       title: "Make Me Cross",
       subtitle: "A Crossword Building app",
@@ -97,6 +112,12 @@ export default function Home({ lang }: HomeProps) {
       <div className="lander">
         <h1>{data.title}</h1>
         <p>{data.subtitle}</p>
+        <LinkContainer to="/">
+          <Nav.Link>English</Nav.Link>
+        </LinkContainer>
+        <LinkContainer to="/pl">
+          <Nav.Link>Polski</Nav.Link>
+        </LinkContainer>
       </div>
       <Form onSubmit={handleSubmit}>
         <Form.Group controlId="layout">

@@ -2,5 +2,26 @@
   "search.exclude": {
     "**/.sst": true
   },
-  "cSpell.words": ["makemecross", "overtype"]
+  "cSpell.words": [
+    "Aplikacja",
+    "Białego",
+    "budowania",
+    "Czarnego",
+    "długość",
+    "krzyżówek",
+    "Kwadratu",
+    "makemecross",
+    "Maksymalna",
+    "overtype",
+    "Polski",
+    "Pustego",
+    "słowa",
+    "Spację",
+    "Szukaj",
+    "Układ",
+    "Wpisz",
+    "wyników",
+    "Wypełnieniem",
+    "znaleziono"
+  ]
 }
