@@ -56,7 +56,7 @@ export default function Home() {
     <div className="Home">
       <div className="lander">
         <h1>Make Me Cross</h1>
-        <p className="text-muted">A Crossword Building app</p>
+        <p>A Crossword Building app</p>
       </div>
       <Form onSubmit={handleSubmit}>
         <Form.Group controlId="layout">
@@ -67,7 +67,7 @@ export default function Home() {
               <p>
                 Type [Space] for an Empty White Square
                 <br />
-                Type [#] for a Black Square
+                Type [#] for a "Black" Square
                 <br />
                 Type [A-Z] for a pre-filled Square
                 <br />
